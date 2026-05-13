@@ -147,7 +147,7 @@ namespace PetaniDesa
                 txtTanaman.Text = row.Cells["jenis_tanaman"].Value.ToString();
             }
         }
-       
+
         private void btnCari_Click(object sender, EventArgs e)
         {
             LoadData(txtCari.Text);
