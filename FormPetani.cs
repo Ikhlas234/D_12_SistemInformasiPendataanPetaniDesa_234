@@ -21,10 +21,15 @@ namespace PetaniDesa
         // Simpan ID untuk keperluan Edit dan Hapus
         private string idPetaniTerpilih = "";
 
+        private BindingSource bindingSourcePetani = new BindingSource();
+
+
+
         public FormPetani()
         {
             InitializeComponent();
             lblTotalRecord = this.Controls.Find("lblTotalRecord", true).FirstOrDefault() as Label;
+            HitungTotalData();
         }
 
 
@@ -33,20 +38,29 @@ namespace PetaniDesa
         // ==========================================
         private void LoadData(string pencarian)
         {
-            string query = "SELECT id_petani, nik, nama_petani, jenis_kelamin, tgl_lahir, no_telp, alamat, jenis_tanaman FROM petani";
+            string query = "";
             DataTable dt;
 
             if (string.IsNullOrEmpty(pencarian))
             {
-                dt = db.FetchAll(query); // Tampil semua
+                // SYARAT UCP 2: Menggunakan VIEW untuk Select data
+                query = "SELECT * FROM vw_data_petani";
+                dt = db.FetchAll(query);
             }
             else
             {
-                query += " WHERE nama_petani LIKE @cari OR nik LIKE @cari";
-                dt = db.FetchAll(query, new { cari = "%" + pencarian + "%" }); // Cari data
+                // SYARAT UCP 2: Menggunakan STORED PROCEDURE untuk Search
+                query = "CALL sp_search_petani(@cari)";
+                dt = db.FetchAll(query, new { cari = pencarian });
             }
 
-            dgvPetani.DataSource = dt;
+            // SYARAT UCP 2: Memanfaatkan Binding DataGridView
+            bindingSourcePetani.DataSource = dt;
+            dgvPetani.DataSource = bindingSourcePetani;
+
+            // Pastikan kamu sudah men-drag "BindingNavigator" dari Toolbox ke Form
+            // Lalu ganti nama defaultnya atau sesuaikan dengan kode di bawah ini:
+            bindingNavigator1.BindingSource = bindingSourcePetani; 
         }
 
         // ==========================================
@@ -76,8 +90,7 @@ namespace PetaniDesa
                 return;
             }
 
-            string query = "INSERT INTO petani (nik, nama_petani, jenis_kelamin, tgl_lahir, no_telp, alamat, jenis_tanaman) " +
-                           "VALUES (@nik, @nama, @jk, @tgl, @telp, @alamat, @tanaman)";
+            string query = "CALL sp_insert_petani(@nik, @nama, @jk, @tgl, @telp, @alamat, @tanaman)";
 
             bool sukses = db.Execute(query, new
             {
@@ -104,6 +117,8 @@ namespace PetaniDesa
         // ==========================================
         private void dgvPetani_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            
+
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dgvPetani.Rows[e.RowIndex];
@@ -115,7 +130,17 @@ namespace PetaniDesa
                 txtNIK.Text = row.Cells["nik"].Value.ToString();
                 txtNama.Text = row.Cells["nama_petani"].Value.ToString();
                 cbJenisKelamin.SelectedItem = row.Cells["jenis_kelamin"].Value.ToString();
-                dtpTglLahir.Value = Convert.ToDateTime(row.Cells["tgl_lahir"].Value);
+                if (dgvPetani.Columns.Contains("tanggal_lahir_format"))
+                {
+                    // Beri tahu C# bahwa format teks dari View adalah "hari-bulan-tahun" (dd-MM-yyyy)
+                    string tglDariDatabase = row.Cells["tanggal_lahir_format"].Value.ToString();
+                    dtpTglLahir.Value = DateTime.ParseExact(tglDariDatabase, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else if (dgvPetani.Columns.Contains("tgl_lahir"))
+                {
+                    // Jika kolom asli (tgl_lahir) yang terbaca
+                    dtpTglLahir.Value = Convert.ToDateTime(row.Cells["tgl_lahir"].Value);
+                }
                 txtTelp.Text = row.Cells["no_telp"].Value.ToString();
                 txtAlamat.Text = row.Cells["alamat"].Value.ToString();
                 txtTanaman.Text = row.Cells["jenis_tanaman"].Value.ToString();
@@ -159,13 +184,10 @@ namespace PetaniDesa
                 return; // Batal edit jika pilih No
             }
 
-            string query = "UPDATE petani SET nik=@nik, nama_petani=@nama, jenis_kelamin=@jk, " +
-                           "tgl_lahir=@tgl, no_telp=@telp, alamat=@alamat, jenis_tanaman=@tanaman " +
-                           "WHERE id_petani=@id";
+            string query = "CALL sp_update_petani(@id, @nik, @nama, @jk, @tgl, @telp, @alamat, @tanaman)";
 
             bool sukses = db.Execute(query, new
-            {
-                nik = txtNIK.Text,
+            {    nik = txtNIK.Text,
                 nama = txtNama.Text,
                 jk = cbJenisKelamin.SelectedItem?.ToString() ?? "",
                 tgl = dtpTglLahir.Value.ToString("yyyy-MM-dd"),
@@ -197,7 +219,7 @@ namespace PetaniDesa
 
             if (dialog == DialogResult.Yes)
             {
-                bool sukses = db.Execute("DELETE FROM petani WHERE id_petani=@id", new { id = idPetaniTerpilih });
+               bool sukses = db.Execute("CALL sp_delete_petani(@id)", new { id = idPetaniTerpilih });
 
                 if (sukses)
                 {
@@ -217,7 +239,7 @@ namespace PetaniDesa
                 using (var conn = db.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT id_petani, nik, nama_petani, jenis_kelamin, tgl_lahir, no_telp, alamat, jenis_tanaman FROM petani";
+                    string query = "SELECT * FROM vw_data_petani";
                     using (var cmd = new MySqlCommand(query, conn))
                     {
                         // Eksekusi DataReader sesuai instruksi soal
@@ -278,51 +300,86 @@ namespace PetaniDesa
             }
         }
 
+
         private void btnSqlInjection_Click(object sender, EventArgs e)
         {
-            // Tambahkan peringatan agar kamu tidak tidak sengaja mengkliknya
             DialogResult dialog = MessageBox.Show(
-                "PERINGATAN: Ini akan mendemonstrasikan SQL Injection yang meretas database dan mengubah semua status game menjadi 'Tamat'. Lanjutkan eksekusi?",
-                "Simulasi Serangan SQL Injection",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
+         "PERINGATAN: Ini akan mendemonstrasikan SQL Injection tipe 'Data Leak'. Kita akan menipu database agar membocorkan SEMUA data tanpa terkecuali menggunakan trik OR 1=1. Lanjutkan?",
+         "Simulasi Serangan SQL Injection",
+         MessageBoxButtons.YesNo,
+         MessageBoxIcon.Warning);
 
             if (dialog == DialogResult.Yes)
             {
                 try
                 {
-                    // NOTE: Ganti connection string di bawah dengan connection string SQL Server yang valid
-                    // Jika Anda menggunakan MySQL, gunakan MySqlConnection/MySqlCommand dan sesuaikan stored procedure/SQL.
-                    using (var conn = new SqlConnection("Data Source=SERVER;Initial Catalog=DATABASE;Integrated Security=True;"))
-                    using (var cmd = new SqlCommand("sp_SearchGame", conn))
-                    {
-                        conn.Open();
+                    // PAYLOAD SAKTI: Membuat logika WHERE menjadi selalu BENAR (TRUE)
+                    string payloadSengajaRentan = "' OR '1'='1";
 
-                        // Ini adalah Payload SQL Injection-nya
-                        // Akan memotong query LIKE milik pencarian, menutupnya, lalu menyisipkan query UPDATE
-                        string payload = "x%'; UPDATE Games SET status_main = 'Tamat'; --";
+                    // Query yang rentan (String Concatenation)
+                    string queryRentan = "SELECT * FROM vw_data_petani WHERE nama_petani = '" + payloadSengajaRentan + "'";
 
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@keyword", payload);
+                    // Mengeksekusi query bajakan menggunakan class Database kamu
+                    DataTable dtBocor = db.FetchAll(queryRentan);
 
-                        // Kita pakai ExecuteNonQuery karena payload berisi query UPDATE yang memanipulasi data
-                        cmd.ExecuteNonQuery();
-                    }
+                    // Memaksa tabel menampilkan data curian
+                    dgvPetani.DataSource = dtBocor;
 
                     MessageBox.Show(
-                        "💥 Serangan Berhasil! Semua status game telah diubah menjadi 'Tamat' secara paksa. Lihat perubahannya di tabel.",
+                        "💥 Serangan Berhasil! Logika database berhasil ditipu.\n\nQuery yang tereksekusi di belakang layar menjadi:\nSELECT * FROM vw_data_petani WHERE nama_petani = '' OR '1'='1'\n\nKarena 1 selalu sama dengan 1, database menyerahkan SEMUA datanya!",
                         "System Hacked",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Exclamation);
-
-                    // Refresh tabel untuk melihat kerusakan yang terjadi
-                    btnRead.PerformClick();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Gagal melakukan simulasi: " + ex.Message);
+                    MessageBox.Show("Error: \n" + ex.Message);
+                }
+            }
+        }
+
+        private void btnResetData_Click(object sender, EventArgs e)
+        {
+            // Tambahkan konfirmasi agar tidak tidak sengaja ter-reset
+            DialogResult dialog = MessageBox.Show("Kembalikan semua data petani ke kondisi semula?", "Konfirmasi Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (dialog == DialogResult.Yes)
+            {
+                try
+                {
+                    // Panggil koneksi menggunakan class jembatan database milikmu
+                    using (MySqlConnection conn = db.GetConnection())
+                    {
+                        conn.Open();
+
+                        // Query MySQL: Kosongkan tabel petani, lalu isi dari tabel petani_backup
+                        // Kita gunakan TRUNCATE agar id_petani (AUTO_INCREMENT) kembali berurut dari angka 1
+                        string query = @"
+                    TRUNCATE TABLE petani;
+                    
+                    INSERT INTO petani (nik, nama_petani, jenis_kelamin, tgl_lahir, no_telp, alamat, jenis_tanaman)
+                    SELECT nik, nama_petani, jenis_kelamin, tgl_lahir, no_telp, alamat, jenis_tanaman 
+                    FROM petani_backup;";
+
+                        using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    MessageBox.Show("Data berhasil direset! Kondisi database telah kembali normal.", "Reset Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Refresh tampilan tabel dan total record menggunakan fungsi yang sudah kamu buat
+                    LoadData("");
+                    HitungTotalData();
+                }
+                catch (Exception ex)
+                {
+                    // Pesan error akan muncul jika tabel petani_backup belum dibuat di MySQL
+                    MessageBox.Show("Gagal mereset data. Pastikan tabel 'petani_backup' sudah dibuat di MySQL! \n\nDetail Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
     }
     }
+    
