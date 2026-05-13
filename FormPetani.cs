@@ -304,6 +304,7 @@ namespace PetaniDesa
 
         private void btnSqlInjection_Click(object sender, EventArgs e)
         {
+           
             DialogResult dialog = MessageBox.Show(
          "PERINGATAN: Ini akan mendemonstrasikan SQL Injection tipe 'Data Leak'. Kita akan menipu database agar membocorkan SEMUA data tanpa terkecuali menggunakan trik OR 1=1. Lanjutkan?",
          "Simulasi Serangan SQL Injection",
@@ -341,6 +342,7 @@ namespace PetaniDesa
 
         private void btnResetData_Click(object sender, EventArgs e)
         {
+            
             // Tambahkan konfirmasi agar tidak tidak sengaja ter-reset
             DialogResult dialog = MessageBox.Show("Kembalikan semua data petani ke kondisi semula?", "Konfirmasi Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
