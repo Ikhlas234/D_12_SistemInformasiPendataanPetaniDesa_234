@@ -41,6 +41,7 @@ namespace PetaniDesa
             string query = "";
             DataTable dt;
 
+
             if (string.IsNullOrEmpty(pencarian))
             {
                 // SYARAT UCP 2: Menggunakan VIEW untuk Select data
