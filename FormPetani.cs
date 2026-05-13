@@ -61,7 +61,7 @@ namespace PetaniDesa
 
             // Pastikan kamu sudah men-drag "BindingNavigator" dari Toolbox ke Form
             // Lalu ganti nama defaultnya atau sesuaikan dengan kode di bawah ini:
-            bindingNavigator1.BindingSource = bindingSourcePetani; 
+            bindingNavigator1.BindingSource = bindingSourcePetani;
         }
 
         // ==========================================
