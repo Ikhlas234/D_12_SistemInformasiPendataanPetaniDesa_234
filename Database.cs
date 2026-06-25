@@ -11,7 +11,7 @@ namespace DataPetaniDesa
         // =============================================
         private readonly string _connectionString = new MySqlConnectionStringBuilder
         {
-            Server = "172.20.10.3",
+            Server = "",
             Database = "db_petani_desa",
             UserID = "root",
             Password = "Ikhlas1702.",         
