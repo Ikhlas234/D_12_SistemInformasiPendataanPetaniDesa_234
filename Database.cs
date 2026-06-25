@@ -11,10 +11,10 @@ namespace DataPetaniDesa
         // =============================================
         private readonly string _connectionString = new MySqlConnectionStringBuilder
         {
-            Server = "127.0.0.1",
+            Server = "172.20.10.3",
             Database = "db_petani_desa",
             UserID = "root",
-            Password = "Ikhlas1702.",          // Kosongkan jika pakai XAMPP default
+            Password = "Ikhlas1702.",         
             Port = 3306,
         }.ToString();
 

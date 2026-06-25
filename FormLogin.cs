@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PetaniDesa
+namespace DataPetaniDesa
 {
     public partial class FormLogin : Form
     {
@@ -38,7 +38,7 @@ namespace PetaniDesa
 
             if (admin != null) // Jika data ditemukan
             {
-                MessageBox.Show("Login Berhasil!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("Login Berhasil!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 FormPetani formPetani = new FormPetani();
                 formPetani.Show();

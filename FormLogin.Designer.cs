@@ -1,4 +1,4 @@
-﻿namespace PetaniDesa
+﻿namespace DataPetaniDesa
 {
     partial class FormLogin
     {
