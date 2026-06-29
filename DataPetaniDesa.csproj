@@ -118,59 +118,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Database.cs" />
-    <Compile Include="dsPetani.cs">
-      <DependentUpon>dsPetani.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="dsPetani.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>dsPetani.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="FormCetak.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormCetak.Designer.cs">
-      <DependentUpon>FormCetak.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormLogin.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="FormLogin.cs" />
     <Compile Include="FormLogin.Designer.cs">
       <DependentUpon>FormLogin.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormPetani.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="FormPetani.cs" />
     <Compile Include="FormPetani.Designer.cs">
       <DependentUpon>FormPetani.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormRekap.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormRekap.Designer.cs">
-      <DependentUpon>FormRekap.cs</DependentUpon>
-    </Compile>
-    <Compile Include="PetaniDAL.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="rptPetani.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>rptPetani.rpt</DependentUpon>
-      <SubType>Component</SubType>
-    </Compile>
-    <EmbeddedResource Include="FormCetak.resx">
-      <DependentUpon>FormCetak.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FormLogin.resx">
       <DependentUpon>FormLogin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormPetani.resx">
       <DependentUpon>FormPetani.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormRekap.resx">
-      <DependentUpon>FormRekap.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -181,21 +142,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="rptPetani.rpt">
-      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
-      <LastGenOutput>rptPetani.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="dsPetani.xsc">
-      <DependentUpon>dsPetani.xsd</DependentUpon>
-    </None>
-    <None Include="dsPetani.xsd">
-      <SubType>Designer</SubType>
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>dsPetani.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="dsPetani.xss">
-      <DependentUpon>dsPetani.xsd</DependentUpon>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -206,9 +152,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{C0C07587-41A7-46C8-8FBD-3F9C8EBE2DDC}" />
